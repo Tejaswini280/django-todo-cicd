@@ -1,23 +1,17 @@
-# Use a compatible Python base image
-FROM python:3.10-bullseye
+FROM python:3.10-slim
 
-# Install required system packages
-RUN apt-get update && apt-get install -y python3-distutils
+WORKDIR /app
 
-# Set working directory
-WORKDIR /data
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
 
-# Install Django
-RUN pip install django==3.2
-
-# Copy project files into the container
+# Copy project files
 COPY . .
 
-# Run database migrations
-RUN python manage.py migrate
-
-# Optional: expose port if you're running the app
+# Expose Django port
 EXPOSE 8000
 
-# Optional: default command to run the server
-CMD ["python", "manage.py", "runserver", "0.0.0.0:3000"]
+# Run migrations and start server at runtime
+CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
